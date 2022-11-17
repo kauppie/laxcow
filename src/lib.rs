@@ -17,7 +17,7 @@ use std::{
 /// ## Simple usage
 ///
 /// ```
-/// use points::laxcow::LaxCow;
+/// use laxcow::LaxCow;
 ///
 /// let lc = LaxCow::Borrowed("foobar");
 ///
@@ -35,7 +35,7 @@ use std::{
 /// by the [`LaxCow::Borrowed`] discriminant via [`ToOwned`] trait.
 ///
 /// ```
-/// use points::laxcow::LaxCow;
+/// use laxcow::LaxCow;
 ///
 /// struct Foo;
 ///
@@ -45,7 +45,7 @@ use std::{
 /// ## [`Cow`] implementation by wrapping [`LaxCow`]
 ///
 /// ```
-/// use points::laxcow::LaxCow;
+/// use laxcow::LaxCow;
 ///
 /// struct Cow<'a, T: ?Sized + ToOwned>(LaxCow::<'a, T, T::Owned>);
 /// ```
@@ -60,7 +60,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// // We don't care what owned type is as it is not used.
     /// let borrowed = LaxCow::<i32, ()>::Borrowed(&42);
@@ -78,7 +78,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// // We don't care what borrowed type is as it is not used.
     /// let owned = LaxCow::<(), i32>::Owned(42);
@@ -97,7 +97,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// let mut borrowed = LaxCow::Borrowed(&42);
     /// let mut owned = LaxCow::<i32, _>::Owned(42);
@@ -129,7 +129,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// let mut borrowed = LaxCow::<_, String>::Borrowed("foobar");
     /// let mut owned = LaxCow::<str, _>::Owned("foobar".to_owned());
@@ -149,7 +149,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// let borrowed: LaxCow<_, String> = LaxCow::Borrowed("foobar");
     /// let owned: LaxCow<str, _> = LaxCow::Owned("foobar".to_owned());
@@ -171,7 +171,7 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     ///
     /// # Examples
     /// ```
-    /// use points::laxcow::LaxCow;
+    /// use laxcow::LaxCow;
     ///
     /// let mut borrowed = LaxCow::<_, String>::Borrowed("foobar");
     /// let mut owned = LaxCow::<str, _>::Owned("foobar".to_owned());
