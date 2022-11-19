@@ -1,5 +1,6 @@
 use std::{
     borrow::{Borrow, Cow},
+    fmt::Debug,
     ops::Deref,
 };
 
@@ -49,7 +50,7 @@ use std::{
 ///
 /// struct Cow<'a, T: ?Sized + ToOwned>(LaxCow::<'a, T, T::Owned>);
 /// ```
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub enum LaxCow<'a, B: ?Sized, O = B> {
     Borrowed(&'a B),
     Owned(O),
@@ -187,6 +188,18 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     }
 }
 
+impl<B: ?Sized, O> AsRef<B> for LaxCow<'_, B, O>
+where
+    O: AsRef<B>,
+{
+    fn as_ref(&self) -> &B {
+        match self {
+            LaxCow::Borrowed(borrowed) => borrowed,
+            LaxCow::Owned(owned) => owned.as_ref(),
+        }
+    }
+}
+
 impl<B: ?Sized, O> Clone for LaxCow<'_, B, O>
 where
     O: Clone,
@@ -199,14 +212,15 @@ where
     }
 }
 
-impl<B: ?Sized, O> AsRef<B> for LaxCow<'_, B, O>
+impl<B: ?Sized, O> Debug for LaxCow<'_, B, O>
 where
-    O: AsRef<B>,
+    B: Debug,
+    O: Debug,
 {
-    fn as_ref(&self) -> &B {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            LaxCow::Borrowed(borrowed) => borrowed,
-            LaxCow::Owned(owned) => owned.as_ref(),
+            Self::Borrowed(borrowed) => Debug::fmt(borrowed, f),
+            Self::Owned(owned) => Debug::fmt(owned, f),
         }
     }
 }
@@ -261,6 +275,15 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn debug() {
+        let laxcow: LaxCow<str, ()> = LaxCow::Borrowed("foobar");
+        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+
+        let laxcow: LaxCow<(), String> = LaxCow::Owned("foobar".to_owned());
+        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+    }
 
     #[test]
     fn clone() {
