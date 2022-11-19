@@ -1,8 +1,14 @@
-use std::{
-    borrow::{Borrow, Cow},
-    fmt::Debug,
-    ops::Deref,
-};
+//! Library provides [`LaxCow`] clone-on-write smart pointer with relaxed
+//! trait constraints relative to [`Cow`]. It is usable even if the owned
+//! type is not equal to the borrow type's implementation of [`ToOwned`]
+//! trait target type.
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+use core::{borrow::Borrow, fmt::Debug, ops::Deref};
+
+#[cfg(feature = "std")]
+use std::borrow::Cow;
 
 /// Clone-on-write smart pointer with relaxed trait constraints
 /// relative to [`Cow`].
@@ -248,6 +254,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, B: ?Sized, O> From<Cow<'a, B>> for LaxCow<'a, B, O>
 where
     B: ToOwned<Owned = O>,
@@ -260,6 +267,7 @@ where
     }
 }
 
+#[cfg(feature = "std")]
 impl<'a, B: ?Sized, O> From<LaxCow<'a, B, O>> for Cow<'a, B>
 where
     B: ToOwned<Owned = O>,
@@ -319,6 +327,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn from_cow_into_laxcow() {
         let cow = Cow::Borrowed("foobar");
         let laxcow = LaxCow::from(cow);
@@ -330,6 +339,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn into_cow_from_laxcow() {
         let laxcow = LaxCow::Borrowed("foobar");
         let cow = Cow::from(laxcow);
