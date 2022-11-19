@@ -31,8 +31,8 @@ use std::{
 /// ## Usage not possible with [`Cow`]
 ///
 /// Storing a borrowed struct which doesn't implement `Clone`.
-/// This is possible because [`LaxCow::Owned`] discriminant is not restricted
-/// by the [`LaxCow::Borrowed`] discriminant via [`ToOwned`] trait.
+/// This is possible because [`LaxCow::Owned`] variant is not restricted
+/// by the [`LaxCow::Borrowed`] variant via [`ToOwned`] trait.
 ///
 /// ```
 /// use laxcow::LaxCow;
@@ -42,7 +42,7 @@ use std::{
 /// let laxcow = LaxCow::<_, ()>::Borrowed(&Foo);
 /// ```
 ///
-/// ## [`Cow`] implementation by wrapping [`LaxCow`]
+/// ## [`Cow`] definition by wrapping [`LaxCow`]
 ///
 /// ```
 /// use laxcow::LaxCow;
