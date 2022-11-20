@@ -1,4 +1,8 @@
-# LaxCow
+<div align="center">
+  <img width="150" src="logo.png">
+
+  <h1 style="padding-top: 20px">LaxCow</h1>
+</div>
 
 [![CI status](https://github.com/kauppie/laxcow/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/kauppie/laxcow/actions/workflows/rust.yml)
 [![License: Apache](https://img.shields.io/badge/License-Apache_2.0-red.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -33,6 +37,7 @@ use laxcow::LaxCow;
 
 struct Foo;
 
+// We don't care about the owned type as it is not used.
 let laxcow = LaxCow::<_, ()>::Borrowed(&Foo);
 ```
 
@@ -56,8 +61,6 @@ Licensed under either of
   ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
 at your option.
-
-## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
