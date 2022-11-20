@@ -379,10 +379,10 @@ mod tests {
     #[test]
     fn display() {
         let laxcow: LaxCow<str, String> = LaxCow::Borrowed("foobar");
-        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+        assert_eq!(format!("{laxcow}"), "foobar");
 
         let laxcow: LaxCow<str, String> = LaxCow::Owned("foobar".to_owned());
-        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+        assert_eq!(format!("{laxcow}"), "foobar");
     }
 
     #[test]
