@@ -1,5 +1,5 @@
 <div align="center">
-  <img width="150" src="logo.png">
+  <img width="150" src="https://raw.githubusercontent.com/kauppie/laxcow/main/logo.png">
 
   <h1 style="padding-top: 20px">LaxCow</h1>
 </div>
