@@ -10,7 +10,13 @@
 extern crate alloc;
 
 use alloc::borrow::{Cow, ToOwned};
-use core::{borrow::Borrow, fmt::Debug, ops::Deref};
+use core::{
+    borrow::Borrow,
+    cmp::Ordering,
+    fmt::{Debug, Display},
+    hash::{Hash, Hasher},
+    ops::Deref,
+};
 
 /// Clone-on-write smart pointer with relaxed trait constraints
 /// relative to [`Cow`].
@@ -31,7 +37,7 @@ use core::{borrow::Borrow, fmt::Debug, ops::Deref};
 /// let lc = LaxCow::Borrowed("foobar");
 ///
 /// let lc2 = lc.clone();
-/// assert_eq!(lc2, LaxCow::Borrowed("foobar"));
+/// assert_eq!(lc2, LaxCow::<_, String>::Borrowed("foobar"));
 ///
 /// let owned = lc.into_owned();
 /// assert_eq!(owned, "foobar".to_owned());
@@ -58,7 +64,6 @@ use core::{borrow::Borrow, fmt::Debug, ops::Deref};
 ///
 /// struct Cow<'a, T: ?Sized + ToOwned>(LaxCow::<'a, T, T::Owned>);
 /// ```
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub enum LaxCow<'a, B: ?Sized, O = B> {
     Borrowed(&'a B),
     Owned(O),
@@ -256,6 +261,19 @@ where
     }
 }
 
+impl<B: ?Sized, O> Display for LaxCow<'_, B, O>
+where
+    B: Display,
+    O: Display,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            Self::Borrowed(borrowed) => Display::fmt(borrowed, f),
+            Self::Owned(owned) => Display::fmt(owned, f),
+        }
+    }
+}
+
 impl<'a, B: ?Sized, O> From<Cow<'a, B>> for LaxCow<'a, B, O>
 where
     B: ToOwned<Owned = O>,
@@ -280,11 +298,74 @@ where
     }
 }
 
+impl<B: ?Sized, O> Hash for LaxCow<'_, B, O>
+where
+    O: Borrow<B>,
+    B: Hash,
+{
+    #[inline]
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        Hash::hash(&**self, state)
+    }
+}
+
+impl<B: ?Sized, O> Eq for LaxCow<'_, B, O>
+where
+    B: Eq,
+    O: Borrow<B>,
+{
+}
+
+impl<B: ?Sized, O> Ord for LaxCow<'_, B, O>
+where
+    O: Borrow<B>,
+    B: Ord,
+{
+    #[inline]
+    fn cmp(&self, other: &Self) -> Ordering {
+        Ord::cmp(&**self, &**other)
+    }
+}
+
+impl<'a, 'b, B: ?Sized, O, B2: ?Sized, O2> PartialEq<LaxCow<'a, B2, O2>> for LaxCow<'b, B, O>
+where
+    B: PartialEq<B2>,
+    O: Borrow<B>,
+    O2: Borrow<B2>,
+{
+    #[inline]
+    fn eq(&self, other: &LaxCow<'a, B2, O2>) -> bool {
+        PartialEq::eq(&**self, &**other)
+    }
+}
+
+impl<B: ?Sized, O> PartialOrd for LaxCow<'_, B, O>
+where
+    B: PartialOrd,
+    O: Borrow<B>,
+{
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        PartialOrd::partial_cmp(&**self, &**other)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    extern crate std;
+
     use alloc::{format, string::String};
+    use std::collections::hash_map::DefaultHasher;
 
     use super::*;
+
+    #[test]
+    fn send_sync() {
+        fn foobar(_: impl Send + Sync) {}
+
+        let laxcow = LaxCow::<i32>::Borrowed(&42);
+        foobar(laxcow);
+    }
 
     #[test]
     fn debug() {
@@ -296,12 +377,21 @@ mod tests {
     }
 
     #[test]
+    fn display() {
+        let laxcow: LaxCow<str, String> = LaxCow::Borrowed("foobar");
+        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+
+        let laxcow: LaxCow<str, String> = LaxCow::Owned("foobar".to_owned());
+        assert_eq!(format!("{laxcow:?}"), "\"foobar\"");
+    }
+
+    #[test]
     fn clone() {
         let cow: LaxCow<_, String> = LaxCow::Borrowed("foobar");
-        assert_eq!(cow.clone(), LaxCow::Borrowed("foobar"));
+        assert_eq!(cow.clone(), LaxCow::<_, String>::Borrowed("foobar"));
 
         let cow: LaxCow<str, _> = LaxCow::Owned("foobar".to_owned());
-        assert_eq!(cow.clone(), LaxCow::Owned("foobar".to_owned()));
+        assert_eq!(cow.clone(), LaxCow::<str, _>::Owned("foobar".to_owned()));
     }
 
     #[test]
@@ -316,7 +406,7 @@ mod tests {
     #[test]
     fn default() {
         let cow = LaxCow::<str, String>::default();
-        assert_eq!(cow, LaxCow::Owned(Default::default()));
+        assert_eq!(cow, LaxCow::<str, String>::Owned(Default::default()));
     }
 
     #[test]
@@ -332,11 +422,11 @@ mod tests {
     fn from_cow_into_laxcow() {
         let cow = Cow::Borrowed("foobar");
         let laxcow = LaxCow::from(cow);
-        assert_eq!(laxcow, LaxCow::Borrowed("foobar"));
+        assert_eq!(laxcow, LaxCow::<_, String>::Borrowed("foobar"));
 
         let cow: Cow<str> = Cow::Owned("foobar".to_owned());
         let laxcow = LaxCow::from(cow);
-        assert_eq!(laxcow, LaxCow::Owned("foobar".to_owned()));
+        assert_eq!(laxcow, LaxCow::<str, _>::Owned("foobar".to_owned()));
     }
 
     #[test]
@@ -348,5 +438,48 @@ mod tests {
         let laxcow = LaxCow::Owned("foobar".to_owned());
         let cow: Cow<str> = Cow::from(laxcow);
         assert_eq!(cow, Cow::<str>::Owned("foobar".to_owned()));
+    }
+
+    #[test]
+    fn eq() {
+        let borrowed: LaxCow<_, String> = LaxCow::Borrowed("foobar");
+        let owned: LaxCow<str, _> = LaxCow::Owned("foobar".to_owned());
+
+        assert_eq!(borrowed, owned);
+
+        let borrowed: LaxCow<i32> = LaxCow::Borrowed(&42);
+        let owned = LaxCow::Owned(42);
+
+        assert_eq!(borrowed, owned);
+    }
+
+    #[test]
+    fn ord() {
+        let borrowed: LaxCow<i32> = LaxCow::Borrowed(&42);
+        let owned = LaxCow::Owned(100);
+        assert_eq!(borrowed.cmp(&owned), Ordering::Less);
+
+        let borrowed: LaxCow<i32> = LaxCow::Borrowed(&42);
+        let owned = LaxCow::Owned(42);
+        assert_eq!(borrowed.cmp(&owned), Ordering::Equal);
+
+        let borrowed: LaxCow<i32> = LaxCow::Borrowed(&42);
+        let owned = LaxCow::Owned(1);
+        assert_eq!(borrowed.cmp(&owned), Ordering::Greater);
+    }
+
+    #[test]
+    fn hash() {
+        let borrowed: LaxCow<_, String> = LaxCow::Borrowed("foobar");
+        let owned: LaxCow<str, _> = LaxCow::Owned("foobar".to_owned());
+
+        fn hash_helper(h: impl Hash) -> u64 {
+            let mut hasher = DefaultHasher::new();
+            h.hash(&mut hasher);
+            hasher.finish()
+        }
+
+        assert_eq!(borrowed, owned);
+        assert_eq!(hash_helper(borrowed), hash_helper(owned));
     }
 }
