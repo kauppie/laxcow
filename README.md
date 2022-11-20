@@ -5,8 +5,9 @@
 </div>
 
 [![CI status](https://github.com/kauppie/laxcow/actions/workflows/rust.yml/badge.svg?branch=main)](https://github.com/kauppie/laxcow/actions/workflows/rust.yml)
-[![License: Apache](https://img.shields.io/badge/License-Apache_2.0-red.svg)](https://opensource.org/licenses/Apache-2.0)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Crate](https://img.shields.io/crates/d/laxcow?label=crates.io)](https://crates.io/crates/laxcow)
+[![Docs](https://img.shields.io/docsrs/laxcow?label=docs.rs)](https://docs.rs/laxcow/latest/laxcow/)
+![License](https://img.shields.io/crates/l/laxcow)
 
 Clone-on-write smart pointer similar to [Cow](https://doc.rust-lang.org/std/borrow/enum.Cow.html), but with relaxed trait constraints. Crate is totally `no_std`.
 
