@@ -76,8 +76,8 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     /// ```
     pub const fn is_borrowed(&self) -> bool {
         match self {
-            LaxCow::Borrowed(_) => true,
-            LaxCow::Owned(_) => false,
+            Self::Borrowed(_) => true,
+            Self::Owned(_) => false,
         }
     }
 
@@ -120,14 +120,14 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
         B: ToOwned<Owned = O>,
     {
         match self {
-            LaxCow::Borrowed(borrowed) => {
-                *self = LaxCow::Owned(borrowed.to_owned());
+            Self::Borrowed(borrowed) => {
+                *self = Self::Owned(borrowed.to_owned());
                 match self {
-                    LaxCow::Owned(owned) => owned,
-                    LaxCow::Borrowed(_) => unreachable!(),
+                    Self::Owned(owned) => owned,
+                    Self::Borrowed(_) => unreachable!(),
                 }
             }
-            LaxCow::Owned(owned) => owned,
+            Self::Owned(owned) => owned,
         }
     }
 
@@ -146,8 +146,8 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     /// ```
     pub fn as_owned_mut(&mut self) -> Option<&mut O> {
         match self {
-            LaxCow::Borrowed(_) => None,
-            LaxCow::Owned(owned) => Some(owned),
+            Self::Borrowed(_) => None,
+            Self::Owned(owned) => Some(owned),
         }
     }
 
@@ -169,8 +169,8 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
         B: ToOwned<Owned = O>,
     {
         match self {
-            LaxCow::Borrowed(borrowed) => borrowed.to_owned(),
-            LaxCow::Owned(owned) => owned,
+            Self::Borrowed(borrowed) => borrowed.to_owned(),
+            Self::Owned(owned) => owned,
         }
     }
 
@@ -188,8 +188,8 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
     /// ```
     pub fn try_into_owned(self) -> Option<O> {
         match self {
-            LaxCow::Borrowed(_) => None,
-            LaxCow::Owned(owned) => Some(owned),
+            Self::Borrowed(_) => None,
+            Self::Owned(owned) => Some(owned),
         }
     }
 }
@@ -200,8 +200,8 @@ where
 {
     fn as_ref(&self) -> &B {
         match self {
-            LaxCow::Borrowed(borrowed) => borrowed,
-            LaxCow::Owned(owned) => owned.as_ref(),
+            Self::Borrowed(borrowed) => borrowed,
+            Self::Owned(owned) => owned.as_ref(),
         }
     }
 }
@@ -236,7 +236,7 @@ where
     O: Default,
 {
     fn default() -> Self {
-        LaxCow::Owned(Default::default())
+        Self::Owned(Default::default())
     }
 }
 
@@ -248,8 +248,8 @@ where
 
     fn deref(&self) -> &B {
         match self {
-            LaxCow::Borrowed(borrowed) => borrowed,
-            LaxCow::Owned(owned) => owned.borrow(),
+            Self::Borrowed(borrowed) => borrowed,
+            Self::Owned(owned) => owned.borrow(),
         }
     }
 }
