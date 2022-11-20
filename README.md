@@ -1,6 +1,6 @@
 # LaxCow
 
-Clone-on-write smart pointer similar to [Cow](https://doc.rust-lang.org/std/borrow/enum.Cow.html), but with relaxed trait constraints.
+Clone-on-write smart pointer similar to [Cow](https://doc.rust-lang.org/std/borrow/enum.Cow.html), but with relaxed trait constraints. Crate is totally `no_std`.
 
 # Examples
 

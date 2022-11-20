@@ -2,6 +2,14 @@
 name = "laxcow"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Clone-on-write smart pointer with relaxed trait constraints"
+homepage = "https://github.com/kauppie/laxcow/tree/main"
+documentation = "https://docs.rs/laxcow"
+repository = "https://github.com/kauppie/laxcow/tree/main"
+readme = "README.md"
+keywords = ["cow", "no_std"]
+categories = ["rust-patterns", "no-std"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

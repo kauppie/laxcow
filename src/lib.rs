@@ -1,7 +1,9 @@
 //! Library provides [`LaxCow`] clone-on-write smart pointer with relaxed
-//! trait constraints relative to [`Cow`]. The main difference being, it
-//! is usable even if the owned type is not equal to the borrow type's
-//! implementation of [`ToOwned`] trait target type.
+//! trait constraints relative to [`Cow`]. The main difference being, [`LaxCow`]
+//! is usable even if the owned type is not equal to the target type of
+//! borrow type's implementation of [`ToOwned`] trait.
+//!
+//! Crate is totally `no_std`.
 
 #![no_std]
 
