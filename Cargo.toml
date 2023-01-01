@@ -10,7 +10,7 @@ repository = "https://github.com/kauppie/laxcow/tree/main"
 readme = "README.md"
 keywords = ["cow", "no_std"]
 categories = ["rust-patterns", "no-std"]
-exclude = [".github/"]
+exclude = ["/.github/", "/logo.png"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
