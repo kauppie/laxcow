@@ -52,6 +52,13 @@ use laxcow::LaxCow;
 struct Cow<'a, T: ?Sized + ToOwned>(LaxCow::<'a, T, <T as ToOwned>::Owned>);
 ```
 
+## Usability without `alloc`
+
+`LaxCow` can be used without `alloc` but this restricts the usage quite a bit as `ToOwned` is defined in `alloc`.
+Interaction with [Cow](https://doc.rust-lang.org/std/borrow/enum.Cow.html) also is not possible. It is also
+debatable if clone-on-write functionality is useful in `no_std` environment, but this crate tries not to make
+any assumptions about the usage.
+
 ## License
 
 Licensed under either of
