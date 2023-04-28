@@ -7,8 +7,10 @@
 
 #![no_std]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
 
+#[cfg(feature = "alloc")]
 use alloc::borrow::{Cow, ToOwned};
 use core::{
     borrow::Borrow,
@@ -122,6 +124,7 @@ impl<'a, B: ?Sized, O> LaxCow<'a, B, O> {
     /// assert_eq!(borrowed, LaxCow::Owned(52));
     /// assert_eq!(owned, LaxCow::Owned(52));
     /// ```
+    #[cfg(feature = "alloc")]
     pub fn to_mut(&mut self) -> &mut O
     where
         B: ToOwned<Owned = O>,
@@ -187,6 +190,7 @@ impl<'a, B: ?Sized, O> LaxCow<'a, B, O> {
     /// assert_eq!(borrowed.into_owned(), "foobar".to_owned());
     /// assert_eq!(owned.into_owned(), "foobar".to_owned());
     /// ```
+    #[cfg(feature = "alloc")]
     pub fn into_owned(self) -> O
     where
         B: ToOwned<Owned = O>,
@@ -292,6 +296,7 @@ where
     }
 }
 
+#[cfg(feature = "alloc")]
 impl<'a, B: ?Sized, O> From<Cow<'a, B>> for LaxCow<'a, B, O>
 where
     B: ToOwned<Owned = O>,
@@ -304,6 +309,7 @@ where
     }
 }
 
+#[cfg(feature = "alloc")]
 impl<'a, B: ?Sized, O> From<LaxCow<'a, B, O>> for Cow<'a, B>
 where
     B: ToOwned<Owned = O>,
@@ -369,10 +375,16 @@ where
 }
 
 #[cfg(test)]
+#[cfg(feature = "alloc")]
 mod tests {
+    extern crate alloc;
     extern crate std;
 
-    use alloc::{format, string::String};
+    use alloc::{
+        borrow::{Cow, ToOwned},
+        format,
+        string::String,
+    };
     use std::collections::hash_map::DefaultHasher;
 
     use super::*;
