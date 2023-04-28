@@ -69,7 +69,7 @@ pub enum LaxCow<'a, B: ?Sized, O = B> {
     Owned(O),
 }
 
-impl<B: ?Sized, O> LaxCow<'_, B, O> {
+impl<'a, B: ?Sized, O> LaxCow<'a, B, O> {
     /// Returns `true` if [`LaxCow`] contains borrowed item, `false` otherwise.
     ///
     /// # Examples
@@ -138,23 +138,39 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
         }
     }
 
-    /// Returns mutable reference to the owned item wrapped in [`Some`] if the item is owned.
-    /// Otherwise, if the item is borrowed, [`None`] will be returned.
+    /// Attempts to get a mutable reference to the owned variant of the instance.
+    ///
+    /// No conversion is attempted but mutable reference to the borrowed item is
+    /// returned as an error.
     ///
     /// # Examples
     /// ```
     /// use laxcow::LaxCow;
     ///
-    /// let mut borrowed = LaxCow::<_, String>::Borrowed("foobar");
-    /// let mut owned = LaxCow::<str, _>::Owned("foobar".to_owned());
+    /// let mut borrowed = LaxCow::<_, String>::Borrowed("borrow");
+    /// let mut owned = LaxCow::<str, _>::Owned("own".to_owned());
     ///
-    /// assert_eq!(borrowed.as_owned_mut(), None);
-    /// assert_eq!(owned.as_owned_mut(), Some(&mut "foobar".to_owned()));
+    /// assert_eq!(borrowed.try_as_owned_mut(), Err(&mut "borrow"));
+    /// assert_eq!(owned.try_as_owned_mut(), Ok(&mut "own".to_owned()));
     /// ```
-    pub fn as_owned_mut(&mut self) -> Option<&mut O> {
+    ///
+    /// As the borrowed item is not mutable referenced, it cannot be modified. However,
+    /// the reference itself can be modified:
+    ///
+    /// ```
+    /// use laxcow::LaxCow;
+    ///
+    /// let another = "another borrow";
+    /// let mut borrowed = LaxCow::<_, String>::Borrowed("borrow");
+    ///
+    /// *borrowed.try_as_owned_mut().unwrap_err() = another;
+    ///
+    /// assert_eq!(borrowed, LaxCow::<_, String>::Borrowed("another borrow"));
+    /// ```
+    pub fn try_as_owned_mut(&mut self) -> Result<&mut O, &mut &'a B> {
         match self {
-            Self::Borrowed(_) => None,
-            Self::Owned(owned) => Some(owned),
+            Self::Borrowed(borrowed) => Err(borrowed),
+            Self::Owned(owned) => Ok(owned),
         }
     }
 
@@ -181,22 +197,24 @@ impl<B: ?Sized, O> LaxCow<'_, B, O> {
         }
     }
 
-    /// Returns owned item wrapped in [`Some`], or [`None`] if the item is borrowed.
+    /// Attempts to transform the instance into its owned variant.
+    ///
+    /// No conversion is attempted but the borrowed item is returned as an error.
     ///
     /// # Examples
     /// ```
     /// use laxcow::LaxCow;
     ///
-    /// let mut borrowed = LaxCow::<_, String>::Borrowed("foobar");
-    /// let mut owned = LaxCow::<str, _>::Owned("foobar".to_owned());
+    /// let mut borrowed = LaxCow::<_, String>::Borrowed("borrow");
+    /// let mut owned = LaxCow::<str, _>::Owned("own".to_owned());
     ///
-    /// assert_eq!(borrowed.try_into_owned(), None);
-    /// assert_eq!(owned.try_into_owned(), Some("foobar".to_owned()));
+    /// assert_eq!(borrowed.try_into_owned(), Err("borrow"));
+    /// assert_eq!(owned.try_into_owned(), Ok("own".to_owned()));
     /// ```
-    pub fn try_into_owned(self) -> Option<O> {
+    pub fn try_into_owned(self) -> Result<O, &'a B> {
         match self {
-            Self::Borrowed(_) => None,
-            Self::Owned(owned) => Some(owned),
+            Self::Borrowed(borrowed) => Err(borrowed),
+            Self::Owned(owned) => Ok(owned),
         }
     }
 }
