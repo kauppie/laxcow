@@ -53,6 +53,9 @@ jobs:
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     
+    - name: Add target thumbv6m-none-eabi
+      run: rustup target add thumbv6m-none-eabi
+
     - name: Build on thumbv6m-none-eabi
       working-directory: ./tests/no_alloc
       run: cargo build --verbose --target thumbv6m-none-eabi
